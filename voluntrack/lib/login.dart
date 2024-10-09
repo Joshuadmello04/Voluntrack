@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'landingpage.dart';
 import 'signup.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore package
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,23 +13,64 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String _errorMessage = '';
 
-  // Mock function to handle login (for demonstration purposes)
-  void _login(BuildContext context) {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String _errorMessage = '';
+  bool _isLoading = false; // For loading indicator
+
+  // Function to handle login by checking credentials in Firestore
+  Future<void> _login(BuildContext context) async {
     String inputEmail = _emailController.text.trim();
     String inputPassword = _passwordController.text.trim();
 
-    // For demonstration, you can use hardcoded credentials
-    if (inputEmail == "test@example.com" && inputPassword == "password") {
-      // Navigate to LandingPage if credentials are correct
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LandingPage()),
-      );
-    } else {
+    // Basic input validation
+    if (inputEmail.isEmpty || inputPassword.isEmpty) {
       setState(() {
-        _errorMessage = 'Invalid email or password. Please try again.';
+        _errorMessage = 'Please enter your email and password.';
+      });
+      return;
+    }
+
+    setState(() {
+      _errorMessage = ''; // Clear previous error message
+      _isLoading = true; // Show loading indicator
+    });
+
+    try {
+      // Fetch user data from Firestore by email
+      QuerySnapshot querySnapshot = await _firestore
+          .collection('Volunteer') // Your Firestore collection
+          .where('email', isEqualTo: inputEmail)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        var userDoc = querySnapshot.docs.first;
+        var storedPassword = userDoc['password'];
+
+        // Compare the inputted password with the stored password
+        if (storedPassword == inputPassword) {
+          // Navigate to LandingPage if password is correct
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LandingPage()),
+          );
+        } else {
+          setState(() {
+            _errorMessage = 'Incorrect password. Please try again.';
+          });
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'No account found with that email.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'An error occurred. Please try again later.';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
       });
     }
   }
@@ -36,19 +78,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink[50],
+      backgroundColor: Colors.pink[50], // Light background color
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 60), // Extra space at the top
               _header(),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               _inputField(
                   "Email", Icons.email_outlined, false, _emailController),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               _inputField(
                   "Password", Icons.lock_outline, true, _passwordController),
               const SizedBox(height: 10),
@@ -58,13 +100,15 @@ class _LoginPageState extends State<LoginPage> {
                       style: const TextStyle(color: Colors.red),
                     )
                   : const SizedBox.shrink(),
-              const SizedBox(height: 30),
-              _loginButton(context),
               const SizedBox(height: 20),
+              _isLoading
+                  ? CircularProgressIndicator() // Show loading indicator
+                  : _loginButton(context),
+              const SizedBox(height: 10),
               _googleLoginButton(context),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               _signupLink(context),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -76,54 +120,37 @@ class _LoginPageState extends State<LoginPage> {
     return const Column(
       children: [
         Text(
-          "Welcome Back!",
-          style: TextStyle(
-              fontSize: 40, fontWeight: FontWeight.bold, color: Colors.purple),
+          "Sign in",
+          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
-        Text(
-          "Login using your credentials",
-          style: TextStyle(fontSize: 18, color: Colors.black54),
-        ),
+        Text("Login using your credentials", style: TextStyle(fontSize: 18)),
       ],
     );
   }
 
   Widget _inputField(String hintText, IconData icon, bool isObscure,
       TextEditingController controller) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: hintText,
-          border: InputBorder.none,
-          fillColor: Colors.purple.withOpacity(0.1),
-          filled: true,
-          prefixIcon: Icon(icon, color: Colors.purple),
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hintText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
         ),
-        obscureText: isObscure,
+        fillColor: Colors.purple.withOpacity(0.1),
+        filled: true,
+        prefixIcon: Icon(icon, color: Colors.purple),
       ),
+      obscureText: isObscure,
     );
   }
 
   Widget _loginButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        _login(context); // Call mock login function
+        _login(context); // Call login function
       },
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(
@@ -166,7 +193,7 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const SignUpPage()),
+              MaterialPageRoute(builder: (context) => SignUpPage()),
             );
           },
           child: const Text(

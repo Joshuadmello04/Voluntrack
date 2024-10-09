@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161312071916",
+    "project_id": "volunteerauth-3fb81",
+    "storage_bucket": "volunteerauth-3fb81.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161312071916:android:8ec269147f44468c4b05c9",
+        "android_client_info": {
+          "package_name": "com.example.voluntrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFzUY02ENK50llpcGVTZ7gVDCH3wQt9cs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

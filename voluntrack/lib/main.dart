@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 import 'signup.dart';
 import 'login.dart';
+import 'package:firebase_core/firebase_core.dart'; // Correct import for Firebase
 
-void main() {
+// Firebase configuration
+// const firebaseConfig = {
+//   "apiKey": "AIzaSyAnFnIdsPGxhdKW1LnMOtfJGthyonBCNZ4",
+//   "authDomain": "volunteerauth-3fb81.firebaseapp.com",
+//   "projectId": "volunteerauth-3fb81",
+//   "storageBucket": "volunteerauth-3fb81.appspot.com",
+//   "messagingSenderId": "161312071916",
+//   "appId": "1:161312071916:web:2cef47f0f0d72a3e4b05c9"
+// };
+
+void main() async {
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Ensures binding before Firebase initialization
+  await Firebase.initializeApp(
+    options: FirebaseOptions(
+        apiKey: "AIzaSyAnFnIdsPGxhdKW1LnMOtfJGthyonBCNZ4",
+        authDomain: "volunteerauth-3fb81.firebaseapp.com",
+        projectId: "volunteerauth-3fb81",
+        storageBucket: "volunteerauth-3fb81.appspot.com",
+        messagingSenderId: "161312071916",
+        appId: "1:161312071916:web:2cef47f0f0d72a3e4b05c9"),
+  ); // Initialize Firebase
   runApp(const MyApp());
 }
 
@@ -13,6 +35,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Volunteer Sign-Up',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
@@ -33,7 +56,7 @@ class LandingPage extends StatelessWidget {
         children: [
           // Background image
           Image.asset(
-            '../assets/hands.jpg', // Replace with your image path
+            '../assets/hands.jpg', // Corrected path to the image
             fit: BoxFit.cover,
           ),
           // Content overlay
@@ -58,8 +81,7 @@ class LandingPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const SignUpPage()),
+                      MaterialPageRoute(builder: (context) => SignUpPage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

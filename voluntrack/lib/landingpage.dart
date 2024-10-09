@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 
 class LandingPage extends StatelessWidget {
   const LandingPage({Key? key}) : super(key: key);
@@ -27,13 +29,33 @@ class LandingPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // User's name
-              const Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Text(
-                  'Marcus',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
+              // User's name fetched from Firestore
+              FutureBuilder<DocumentSnapshot>(
+                future: _getUserData(), // Fetch user data
+                builder: (BuildContext context,
+                    AsyncSnapshot<DocumentSnapshot> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return const Text("Error loading name");
+                  }
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                    return const Text("User not found");
+                  }
+
+                  String fullName = snapshot.data!['fullName'] ??
+                      'Volunteer'; // Fetch fullName from the document
+
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Text(
+                      fullName,
+                      style: const TextStyle(
+                          fontSize: 28, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
 
@@ -63,7 +85,7 @@ class LandingPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   image: const DecorationImage(
                     image: AssetImage(
-                        'assets/images/community.jpg'), // Replace with your asset
+                        '../assets/hands.jpg'), // Replace with your asset
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -143,16 +165,14 @@ class LandingPage extends StatelessWidget {
                           'Meals on Wheels: Seattle/Belltown Volunteer Caller and Office Support',
                       date: 'Oct 30, 2022 • 08:30 AM',
                       organization: 'Sound Generations',
-                      image:
-                          'assets/images/volunteer1.jpg', // Replace with asset
+                      image: '../assets/hands2.jpg', // Replace with asset
                     ),
                     _buildEventCard(
                       title:
                           'Volunteer Cleanup: Help Rebuild Homes After Flood',
                       date: 'Nov 05, 2022 • 10:00 AM',
                       organization: 'Rebuild Together',
-                      image:
-                          'assets/images/volunteer2.jpg', // Replace with asset
+                      image: '../assets/helping.jpg', // Replace with asset
                     ),
                     // Add more cards as needed
                   ],
@@ -182,6 +202,19 @@ class LandingPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Fetch user data based on current user's UID
+  Future<DocumentSnapshot> _getUserData() async {
+    User? user = FirebaseAuth.instance.currentUser; // Get current user
+    if (user != null) {
+      return await FirebaseFirestore.instance
+          .collection('Volunteer')
+          .doc(user.uid) // Fetch document using UID
+          .get();
+    } else {
+      throw Exception("No user signed in");
+    }
   }
 
   // Widget for building Event Cards
@@ -221,9 +254,10 @@ class LandingPage extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 10),
               Text(

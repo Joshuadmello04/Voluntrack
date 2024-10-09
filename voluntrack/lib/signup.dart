@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'carepage.dart'; // Import the CausesPage
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // For date formatting
+import 'causespage.dart'; // Import your next screen
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
-
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -11,11 +11,18 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _mobileNumberController = TextEditingController();
+  final TextEditingController _contactController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _emergencyContactNumberController =
       TextEditingController();
+  final TextEditingController _emergencyContactRelationController =
+      TextEditingController();
+  final TextEditingController _skillsController =
+      TextEditingController(); // Comma-separated skills
+  final TextEditingController _passwordController = TextEditingController();
+
+  DateTime? selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +38,7 @@ class _SignUpPageState extends State<SignUpPage> {
             const Center(
               child: Text(
                 'Create your account',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
             ),
             const SizedBox(height: 20),
@@ -66,12 +70,12 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
             const SizedBox(height: 10),
-            // Mobile Number
+            // Contact Number
             TextField(
-              controller: _mobileNumberController,
+              controller: _contactController,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.phone),
-                labelText: 'Mobile Number',
+                labelText: 'Contact Number',
                 filled: true,
                 fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
@@ -83,9 +87,67 @@ class _SignUpPageState extends State<SignUpPage> {
             // Date of Birth
             TextField(
               controller: _dobController,
+              readOnly: true,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.calendar_today),
                 labelText: 'Date Of Birth',
+                filled: true,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                ),
+              ),
+              onTap: () => _selectDate(context), // Call date picker
+            ),
+            const SizedBox(height: 10),
+            // Address
+            TextField(
+              controller: _addressController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.home),
+                labelText: 'Address',
+                filled: true,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Emergency Contact Number
+            TextField(
+              controller: _emergencyContactNumberController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.phone),
+                labelText: 'Emergency Contact Number',
+                filled: true,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Emergency Contact Relation
+            TextField(
+              controller: _emergencyContactRelationController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.group),
+                labelText: 'Emergency Contact Relation',
+                filled: true,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Skills
+            TextField(
+              controller: _skillsController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.star),
+                labelText: 'Skills (comma-separated)',
                 filled: true,
                 fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
@@ -109,31 +171,12 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
             const SizedBox(height: 10),
-            // Confirm Password
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.lock),
-                labelText: 'Confirm Password',
-                filled: true,
-                fillColor: const Color.fromARGB(255, 220, 114, 246),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
             // Sign Up Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Navigate to CausesPage on Sign Up
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CausesPage()),
-                  );
+                  _signUp(); // Call sign-up function
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -192,5 +235,69 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+        _dobController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+  Future<void> _signUp() async {
+    // Input validation
+    if (_fullNameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _contactController.text.isEmpty ||
+        _dobController.text.isEmpty ||
+        _addressController.text.isEmpty ||
+        _emergencyContactNumberController.text.isEmpty ||
+        _emergencyContactRelationController.text.isEmpty ||
+        _skillsController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please fill in all fields.")),
+      );
+      return; // Exit the method if validation fails
+    }
+
+    try {
+      // Add user data to Firestore
+      await FirebaseFirestore.instance.collection('Volunteer').add({
+        'fullName': _fullNameController.text,
+        'email': _emailController.text,
+        'contact': _contactController.text,
+        'dateOfBirth': _dobController.text,
+        'address': _addressController.text,
+        'emergencyContactNumber': _emergencyContactNumberController.text,
+        'emergencyContactRelation': _emergencyContactRelationController.text,
+        'skills': _skillsController.text
+            .split(',')
+            .map((skill) => skill.trim())
+            .toList(),
+        'password': _passwordController
+            .text, // Ensure to encrypt the password in a real application
+      });
+
+      // Navigate to the next page on successful sign-up
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                CausesPage()), // Replace with your next screen
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error signing up: $e")),
+      );
+    }
   }
 }
