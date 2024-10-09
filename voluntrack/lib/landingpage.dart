@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'eventdetailspage.dart';
+import 'userprofilepage.dart'; // Adjust the path as necessary
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({Key? key}) : super(key: key);
+
+  @override
+  _LandingPageState createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  int _selectedIndex = 0; // Track the currently selected index
+
+  // List of pages to navigate
+  final List<Widget> _pages = [
+    Placeholder(), // HomePage widget
+    Placeholder(), // Notifications or another page
+    UserProfilePage(), // UserProfilePage
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -139,45 +155,72 @@ class LandingPage extends StatelessWidget {
               const SizedBox(height: 30),
 
               // Recommended for You Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
-                    'Recommended for You',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'View All',
-                    style: TextStyle(fontSize: 16, color: Colors.orangeAccent),
-                  ),
-                ],
-              ),
+              _buildSectionTitle('Recommended for You', 'View All'),
               const SizedBox(height: 20),
 
-              // Horizontal Scroll of Event Cards
-              SizedBox(
-                height: 250,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    _buildEventCard(
-                      title:
-                          'Meals on Wheels: Seattle/Belltown Volunteer Caller and Office Support',
-                      date: 'Oct 30, 2022 • 08:30 AM',
-                      organization: 'Sound Generations',
-                      image: '../assets/hands2.jpg', // Replace with asset
-                    ),
-                    _buildEventCard(
-                      title:
-                          'Volunteer Cleanup: Help Rebuild Homes After Flood',
-                      date: 'Nov 05, 2022 • 10:00 AM',
-                      organization: 'Rebuild Together',
-                      image: '../assets/helping.jpg', // Replace with asset
-                    ),
-                    // Add more cards as needed
-                  ],
+              // Horizontal Scroll of Event Cards for Recommended Events
+              _buildEventCardList([
+                _buildEventCardData(
+                  title:
+                      'Meals on Wheels: Seattle/Belltown Volunteer Caller and Office Support',
+                  date: 'Oct 30, 2022 • 08:30 AM',
+                  organization: 'Sound Generations',
+                  image: '../assets/hands2.jpg', // Replace with asset
                 ),
-              ),
+                _buildEventCardData(
+                  title: 'Volunteer Cleanup: Help Rebuild Homes After Flood',
+                  date: 'Nov 05, 2022 • 10:00 AM',
+                  organization: 'Rebuild Together',
+                  image: '../assets/helping.jpg', // Replace with asset
+                ),
+                // Add more cards as needed
+              ]),
+
+              const SizedBox(height: 30),
+
+              // Upcoming Events Section
+              _buildSectionTitle('Upcoming Events', 'View All'),
+              const SizedBox(height: 20),
+
+              // Horizontal Scroll of Event Cards for Upcoming Events
+              _buildEventCardList([
+                _buildEventCardData(
+                  title: 'Food Drive: Collect Non-Perishables',
+                  date: 'Dec 01, 2022 • 09:00 AM',
+                  organization: 'Local Food Bank',
+                  image: '../assets/volunteers.jpg', // Replace with asset
+                ),
+                _buildEventCardData(
+                  title: 'Community Clean-up Day',
+                  date: 'Dec 10, 2022 • 08:00 AM',
+                  organization: 'City Council',
+                  image: '../assets/hands2.jpg', // Replace with asset
+                ),
+                // Add more cards as needed
+              ]),
+
+              const SizedBox(height: 30),
+
+              // Nearest to You Section
+              _buildSectionTitle('Nearest to You', 'View All'),
+              const SizedBox(height: 20),
+
+              // Horizontal Scroll of Event Cards for Nearest Events
+              _buildEventCardList([
+                _buildEventCardData(
+                  title: 'Park Maintenance: Help Us Keep It Clean',
+                  date: 'Oct 20, 2022 • 08:00 AM',
+                  organization: 'Community Park',
+                  image: '../assets/helping.jpg', // Replace with asset
+                ),
+                _buildEventCardData(
+                  title: 'Beach Cleanup',
+                  date: 'Oct 25, 2022 • 09:30 AM',
+                  organization: 'Ocean Conservancy',
+                  image: '../assets/slum.jpg', // Replace with asset
+                ),
+                // Add more cards as needed
+              ]),
             ],
           ),
         ),
@@ -186,6 +229,22 @@ class LandingPage extends StatelessWidget {
         selectedItemColor: Colors.orangeAccent,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
+        currentIndex: _selectedIndex, // Current index for the navigation
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index; // Update the selected index
+            if (index == 2) {
+              // Navigate to UserProfilePage when "Profile" is tapped
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      UserProfilePage(), // Navigate to UserProfilePage
+                ),
+              );
+            }
+          });
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -218,62 +277,151 @@ class LandingPage extends StatelessWidget {
   }
 
   // Widget for building Event Cards
-  Widget _buildEventCard({
+  Widget _buildEventCardList(List<Map<String, String>> events) {
+    return SizedBox(
+      height: 250,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: events.map((event) {
+          return _buildEventCard(
+            context,
+            title: event['title']!,
+            date: event['date']!,
+            organization: event['organization']!,
+            image: event['image']!,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // Function to create a list of event card data
+  Map<String, String> _buildEventCardData({
     required String title,
     required String date,
     required String organization,
     required String image,
   }) {
-    return Container(
-      width: 250,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(
-          image: AssetImage(image),
-          fit: BoxFit.cover,
-        ),
-      ),
+    return {
+      'title': title,
+      'date': date,
+      'organization': organization,
+      'image': image,
+    };
+  }
+
+  // Widget for building an individual event card
+  Widget _buildEventCard(
+    BuildContext context, {
+    required String title,
+    required String date,
+    required String organization,
+    required String image,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to EventDetailsPage on tap
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailsPage(
+              title: title,
+            ), // Adjust with your event details page
+          ),
+        );
+      },
       child: Container(
+        margin: const EdgeInsets.only(right: 16),
+        width: 300,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          gradient: const LinearGradient(
-            colors: [Colors.black54, Colors.transparent],
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
+          image: DecorationImage(
+            image: AssetImage(image), // Event image
+            fit: BoxFit.cover,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                date,
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-              const SizedBox(height: 5),
-              Text(
-                organization,
-                style:
-                    const TextStyle(color: Colors.orangeAccent, fontSize: 14),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  date,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  organization,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 10),
+                // Add a "View" button to each event card
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orangeAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    // Navigate to EventDetailsPage when the button is pressed
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventDetailsPage(
+                          title: title,
+                        ), // Adjust with your event details page
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'View',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  // Widget for building section titles
+  Widget _buildSectionTitle(String title, String actionText) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          actionText,
+          style: const TextStyle(
+            color: Colors.orangeAccent,
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 }
