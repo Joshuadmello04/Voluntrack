@@ -39,6 +39,8 @@ class LandingPage extends StatelessWidget {
           // Content overlay
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            color: Colors.black
+                .withOpacity(0.3), // Add a semi-transparent black overlay
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -47,7 +49,7 @@ class LandingPage extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 24.0,
+                    fontSize: 32.0,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -70,7 +72,7 @@ class LandingPage extends StatelessWidget {
                   ),
                   child: const Text(
                     'Create Account',
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(fontSize: 20, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -86,7 +88,7 @@ class LandingPage extends StatelessWidget {
                     'Already a member? Log in',
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 16,
+                      fontSize: 18,
                       decoration: TextDecoration.underline,
                     ),
                   ),

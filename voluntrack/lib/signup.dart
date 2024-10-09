@@ -45,7 +45,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 prefixIcon: Icon(Icons.person),
                 labelText: 'Full Name',
                 filled: true,
-                fillColor: Colors.pinkAccent.shade100,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 ),
@@ -59,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 prefixIcon: Icon(Icons.email),
                 labelText: 'Email',
                 filled: true,
-                fillColor: Colors.pinkAccent.shade100,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 ),
@@ -73,7 +73,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 prefixIcon: Icon(Icons.phone),
                 labelText: 'Mobile Number',
                 filled: true,
-                fillColor: Colors.pinkAccent.shade100,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 ),
@@ -87,7 +87,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 prefixIcon: Icon(Icons.calendar_today),
                 labelText: 'Date Of Birth',
                 filled: true,
-                fillColor: Colors.pinkAccent.shade100,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 ),
@@ -102,7 +102,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 prefixIcon: Icon(Icons.lock),
                 labelText: 'Password',
                 filled: true,
-                fillColor: Colors.pinkAccent.shade100,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 ),
@@ -117,7 +117,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 prefixIcon: Icon(Icons.lock),
                 labelText: 'Confirm Password',
                 filled: true,
-                fillColor: Colors.pinkAccent.shade100,
+                fillColor: const Color.fromARGB(255, 220, 114, 246),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 ),
@@ -140,11 +140,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0),
                   ),
-                  backgroundColor: Colors.purpleAccent,
+                  backgroundColor: const Color.fromARGB(255, 220, 114, 246),
                 ),
                 child: const Text(
                   'Sign up',
-                  style: TextStyle(fontSize: 18),
+                  style: TextStyle(fontSize: 18, color: Colors.black),
                 ),
               ),
             ),
